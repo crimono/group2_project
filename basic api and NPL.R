@@ -1,21 +1,23 @@
-library(rtweet)
 library(googleway)
+
+library(rtweet)
+
 library(SentimentAnalysis)
 
-#tmap 
+#tmap
 
 key <- "AIzaSyBqZJEhN9WdK3q4IakwLz70RimeKAljdjk"
 set_key(key = key)
 
 #Search for up to 18,000 (non-retweeted) tweets.
-#Twitter rate limits cap the number of search results returned to 18,000 every 15 minutes. 
+#Twitter rate limits cap the number of search results returned to 18,000 every 15 minutes.
 #To request more than that,
 #simply set retryonratelimit = TRUE and rtweet will wait for rate limit resets for you.
 #https://cran.r-project.org/web/packages/rtweet/vignettes/intro.html
 GOOGLE_MAPS_KEY <- "https://maps.googleapis.com/maps/api/geocode/json?address=1600+Amphitheatre+Parkway,+Mountain+View,+CA&key=AIzaSyBqZJEhN9WdK3q4IakwLz70RimeKAljdjk"
-tw <- search_tweets(q = "#climatechange", n = 1000, geocode = adress_lookup(address = "california"),
-              lang = "en",
-              include_rts = FALSE)
+tw <- search_tweets(q = "#climatechange", n = 1000, geocode = lookup_coords("california"),
+                                    lang = "en",
+                                    include_rts = FALSE)
 
 ts_plot(tw, "3 hours") +
   ggplot2::theme_minimal() +
