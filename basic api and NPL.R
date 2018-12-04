@@ -1,23 +1,81 @@
 library(googleway)
-
+dasa
 library(rtweet)
-
 library(SentimentAnalysis)
+library(plyr)
 
-#tmap
+#state datasetbuilt in r in order to get the senter of each state
+#compute the radious and build the geocode string for the twitter download
+
+usa <- as.data.frame(state.x77)
+for (i in 1:50){
+  usa$x[i] <- state.center$x[i]
+  usa$y[i] <- state.center$y[i]
+}
+usa$Radius <- sqrt(usa$Area/3.14)
+usa$Miles <- paste0(usa$Radius , "mi")
+usa$geocode <- paste0(usa$y ,",", usa$x,",", usa$Miles)
+
 
 key <- "AIzaSyBqZJEhN9WdK3q4IakwLz70RimeKAljdjk"
 set_key(key = key)
-
+usa$geocode[43]
 #Search for up to 18,000 (non-retweeted) tweets.
 #Twitter rate limits cap the number of search results returned to 18,000 every 15 minutes.
 #To request more than that,
 #simply set retryonratelimit = TRUE and rtweet will wait for rate limit resets for you.
 #https://cran.r-project.org/web/packages/rtweet/vignettes/intro.html
 GOOGLE_MAPS_KEY <- "https://maps.googleapis.com/maps/api/geocode/json?address=1600+Amphitheatre+Parkway,+Mountain+View,+CA&key=AIzaSyBqZJEhN9WdK3q4IakwLz70RimeKAljdjk"
-tw <- search_tweets(q = "#climatechange", n = 1000, geocode = lookup_coords("california"),
-                                    lang = "en",
-                                    include_rts = FALSE)
+
+
+rows_per_state <- 1000
+twitter_data_group <- NULL
+#delete hawaii
+rownames(usa)[11]
+usa <- usa[-11,]
+
+#solution 1 
+for (i in 1:5) {
+  
+  if(is.null(twitter_data_group)) {
+    twitter_data_group<- search_tweets(n = 1000, geocode = usa$geocode[i] ,
+                                       lang = "en",
+                                       include_rts = FALSE)
+    twitter_data_group$state <- rownames(usa)[i]
+    
+  } else {
+    
+    tmp <- search_tweets(n = 1000, geocode = usa$geocode[i] ,
+                                       lang = "en",
+                                       include_rts = FALSE)
+    tmp$state <- names(usa)[i]
+    
+    twitter_data_group <- rbind(twitter_data_group, tmp)
+    
+  }
+  
+
+}
+
+
+
+#solution2
+twitter_data_group <- list()
+for (i in 1:5) {
+  
+    twitter_data_group[[i]] <- search_tweets(n = 1000, geocode = usa$geocode[i] ,
+                                       lang = "en",
+                                       token = 
+                                       include_rts = FALSE)
+    twitter_data_group[[i]]$state <- rownames(usa)[i]
+}
+twitter_data <- rbind.fill(twitter_data_group)
+unique(twitter_data$state)
+
+plot(density(twitter_data$favorite_count))
+mean(twitter_data$favorite_count)
+sd(twitter_data$favorite_count)
+mean(twitter_data$favorite_count)+sd(twitter_data$favorite_count)*3
 
 ts_plot(tw, "3 hours") +
   ggplot2::theme_minimal() +
