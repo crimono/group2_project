@@ -12,5 +12,9 @@ LazyData: true
 LinkingTo: 
     Rcpp
 Imports: 
-    Rcpp
+    Rcpp,
+    rtweet,
+    SentimentAnalysis,
+    plyr,
+    sentimentr
 RoxygenNote: 6.1.1
