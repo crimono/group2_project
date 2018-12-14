@@ -2,9 +2,6 @@
 #'
 #' @description Analyses tweets in every state of the US
 #'
-#' @param Hashtag: A one argument "string" that is a currently used hashtag on
-#' Twitter, like #ClimateChange. It will filter the tweet selection to only i
-#' nclude tweets with this specific hashtag.
 #' @return A table containing the user name of the twitter user, the text, the
 #' number of 'favorites' given to the tweet and the device used to send it
 #' @author group2
@@ -12,6 +9,8 @@
 tweets_analysis <- function() {
   #state dataset built in r in order to get the center of each state
   #compute the radius and build the geocode string for the twitter download
+
+
 
   usa <- as.data.frame(state.x77)
   for (i in 1:50){
@@ -32,7 +31,7 @@ tweets_analysis <- function() {
   twitter_data_group <- list()
   for (i in 1:49) {
 
-    twitter_data_group[[i]] <- rtweet::search_tweets(n = 1000,
+    twitter_data_group[[i]] <- rtweet::search_tweets(n = 10,
                                                      geocode = usa$geocode[i],
                                                      lang = "en",
                                                      token = NULL,
@@ -60,14 +59,18 @@ tweets_analysis <- function() {
   #----------
 
   # Measure the happiness
-  happiness_score <- sentimentr::sentiment_by(twitter_data_filtered$text)
+  # happiness_score <- sentimentr::sentiment_by(twitter_data_filtered$text)
+  happiness_score <- sentimentr::sentiment_by(sentimentr::get_sentences(twitter_data_filtered$text))
+
   twitter_data_filtered$happiness <- happiness_score$ave_sentiment
 
   # Multiply happiness score by favorite_count
 
   tweets <- twitter_data_filtered[rep(row.names(twitter_data_filtered),
                                       twitter_data_filtered$favorite_count),
-                                  1:6]
+                                  1:7]
+
+  return(tweets)
 
   # Easier to just multiply the score by value of favorite_count but on the other
   # hand, if we want to plot the histogram of happiness on Shiny, will be wrong
