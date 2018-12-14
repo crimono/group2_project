@@ -30,7 +30,7 @@ tweets_analysis <- function() {
 
   #store data
   twitter_data_group <- list()
-  for (i in 1:5) {
+  for (i in 1:49) {
 
     twitter_data_group[[i]] <- rtweet::search_tweets(n = 1000,
                                                      geocode = usa$geocode[i],
