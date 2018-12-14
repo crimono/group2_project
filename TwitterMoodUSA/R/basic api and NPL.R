@@ -9,7 +9,7 @@
 #' number of 'favorites' given to the tweet and the device used to send it
 #' @author group2
 #' @export
-tweets_analysis <- function(HashTag, ...) {
+tweets_analysis <- function() {
   #state dataset built in r in order to get the center of each state
   #compute the radius and build the geocode string for the twitter download
 
@@ -29,37 +29,21 @@ tweets_analysis <- function(HashTag, ...) {
   #----------
 
   #store data
-  if (HashTag = NULL) {
-    twitter_data_group <- list()
-    for (i in 1:5) {
+  twitter_data_group <- list()
+  for (i in 1:5) {
 
-      twitter_data_group[[i]] <- rtweet::search_tweets(n = 1000,
-                                                       geocode = usa$geocode[i],
-                                                       lang = "en",
-                                                       token = NULL,
-                                                       include_rts = FALSE,
-                                                       retryonratelimit = FALSE)
-      twitter_data_group[[i]]$state <- rownames(usa)[i]
-    }
-    twitter_data <- plyr::rbind.fill(twitter_data_group)
-    unique(twitter_data$state)
+    twitter_data_group[[i]] <- rtweet::search_tweets(n = 1000,
+                                                     geocode = usa$geocode[i],
+                                                     lang = "en",
+                                                     token = NULL,
+                                                     include_rts = FALSE,
+                                                     retryonratelimit = FALSE)
+    twitter_data_group[[i]]$state <- rownames(usa)[i]
   }
-  else {
-    twitter_data_group <- list()
-    for (i in 1:5) {
+  twitter_data <- plyr::rbind.fill(twitter_data_group)
+  unique(twitter_data$state)
 
-      twitter_data_group[[i]] <- rtweet::search_tweets(q = HashTag,
-                                                       n = 120,
-                                                       geocode = usa$geocode[i],
-                                                       lang = "en",
-                                                       token = NULL,
-                                                       include_rts = FALSE,
-                                                       retryonratelimit = FALSE)
-      twitter_data_group[[i]]$state <- rownames(usa)[i]
-    }
-    twitter_data <- plyr::rbind.fill(twitter_data_group)
-    unique(twitter_data$state)
-  }
+
 
   #----------
 

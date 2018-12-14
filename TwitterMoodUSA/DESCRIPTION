@@ -8,14 +8,14 @@ Author: c(person(("Louis", "Polet", email = "louis.polet@me.com",
         email = "", role = "aut", "cre"), ("Federico", "", email = "", 
         role = "aut", "cre")
 Maintainer: <louis.polet@unil.ch>
-Description: This package allows the user to get an idea of the happiness level 
-of Americans through the content of the tweets that were posted the same day.
-
-Batches of 1000 tweets are downloaded for each state of the US, with the 
-exception of Hawaii which doesn't have enough tweets available for a proper 
-sentiment analysis.Through the sentimentr package, the tweets are analysed and a 
-'happiness' score is given to each tweet, with extra weight given to tweets 
-based on the number of favorites of the tweet.
+Description: 
+    This package allows the user to get an idea of the happiness level 
+    of Americans through the content of the tweets that were posted the same day.
+    Batches of 1000 tweets are downloaded for each state of the US, with the 
+    exception of Hawaii which doesn't have enough tweets available for a proper 
+    sentiment analysis.Through the sentimentr package, the tweets are analysed and a 
+    'happiness' score is given to each tweet, with extra weight given to tweets 
+    based on the number of favorites of the tweet.
 
 License: OpenSource
 Encoding: UTF-8
