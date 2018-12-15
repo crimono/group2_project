@@ -12,14 +12,10 @@ library(leaflet)
 library(dplyr)
 library(ggplot2)
 library(ggforce)
-library(tmap)    # for static and interactive maps
-library(mapview)
-library(sf)
 library(maps)
 library(wordcloud)
 library(memoise)
 library(Rcpp)
-install_github("crimono/group2_project/TwitterMoodUSA")
 library(TwitterMoodUSA)
 
 # Define UI for application that draws a histogram
