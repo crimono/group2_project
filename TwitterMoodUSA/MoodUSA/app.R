@@ -18,7 +18,9 @@ library(sf)
 library(maps)
 library(wordcloud)
 library(memoise)
-
+library(Rcpp)
+install_github("crimono/group2_project/TwitterMoodUSA")
+library(TwitterMoodUSA)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -64,9 +66,11 @@ ui <- fluidPage(
   )
 )
 
+
 # Define server logic required to draw a histogram
 server <- function(input, output) {
 
+  tweet <- TwitterMoodUSA::tweets_analysis()
   mapStates = map("state", fill = TRUE, plot = FALSE)
 
   output$mymap <- renderLeaflet({
@@ -76,100 +80,40 @@ server <- function(input, output) {
   })
 
 
-  tweet <- reactive({
-    usa <- as.data.frame(state.x77)
-    for (i in 1:50){
-      usa$x[i] <- state.center$x[i]
-      usa$y[i] <- state.center$y[i]
-    }
-    usa$Radius <- sqrt(usa$Area/3.14)
-    usa$Miles <- paste0(usa$Radius , "mi")
-    usa$geocode <- paste0(usa$y ,",", usa$x,",", usa$Miles)
+  # observe({
+    pal <- colorBin(
+      palette = "YlOrRd",
+      domain = tweet$happiness, bins=bins)
 
-    #delete hawaii because almost no tweets there
-    rownames(usa)[11]
-    usa <- usa[-11,]
-
-    #----------
-
-    #store data
-    twitter_data_group <- list()
-    for (i in 1:49) {
-
-      twitter_data_group[[i]] <- rtweet::search_tweets(n = 10,
-                                                       geocode = usa$geocode[i],
-                                                       lang = "en",
-                                                       token = NULL,
-                                                       include_rts = FALSE,
-                                                       retryonratelimit = FALSE)
-      twitter_data_group[[i]]$state <- rownames(usa)[i]
-    }
-    twitter_data <- plyr::rbind.fill(twitter_data_group)
-    unique(twitter_data$state)
-
-
-
-    #----------
-
-    # Filtering dataset
-    # Keep only the useful columns
-    twitter_data_filtered <- twitter_data[, c(1, 3, 4, 5, 6, 13)]
-
-    #Take out the favorite_counts larger than 3*sd(favorite_count) to avoid having
-    # accounts with possibly thousands of favorites to completely bias the
-    # analysis
-    twitter_data_filtered$favorite_count <-
-      fav_limit(as.array(twitter_data_filtered[, 6]))
-
-    #----------
-
-    # Measure the happiness
-    # happiness_score <- sentimentr::sentiment_by(twitter_data_filtered$text)
-    happiness_score <- sentimentr::sentiment_by(sentimentr::get_sentences(twitter_data_filtered$text))
-
-    twitter_data_filtered$happiness <- happiness_score$ave_sentiment
-
-    # Multiply happiness score by favorite_count
-
-    tweets <- twitter_data_filtered[rep(row.names(twitter_data_filtered),
-                                        twitter_data_filtered$favorite_count),
-                                    1:7]
-
-
-    observe({
-      pal <- colorBin(
-        palette = "YlOrRd",
-        domain = twitter_data$happiness, bins=bins)
-
-      output$mymap <- leafletProxy("mymap", data =twitter_data_filtered) %>%
-        clearShapes() %>%
-        addPolygons(data = twitter_data_filtered$happiness, fillColor = ~pal(happiness),
-                    weight = 2,
-                    opacity = 1,
-                    color = "white",
-                    dashArray = "3",
-                    fillOpacity = 0.7,
-                    highlight = highlightOptions(weight = 5,
-                      color = "#666",
-                      dashArray = "",
-                      fillOpacity = 0.7,
-                      bringToFront = TRUE))%>%
-        addLegend(pal = pal, values = ~happiness, opacity = 0.7, title = NULL,
-                  position = "bottomright")
-    })
-
-  })
-
-  #----------- Word Clous
-  # Make the wordcloud drawing predictable during a session
-  wordcloud_rep <- repeatable(wordcloud)
-
-  output$plot <- renderPlot({
-    v <- twitter_data_filtered$text
-    wordcloud_rep(names(v), v, scale=c(4,0.5),
-                  min.freq = input$freq, max.words=input$max,
-                  colors=brewer.pal(8, "Dark2"))
-  })
+    output$mymap <- leafletProxy("mymap", data = tweet) %>%
+      clearShapes() %>%
+      addPolygons(data = tweet$happiness, fillColor = ~pal(happiness),
+                  weight = 2,
+                  opacity = 1,
+                  color = "white",
+                  dashArray = "3",
+                  fillOpacity = 0.7,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               dashArray = "",
+                                               fillOpacity = 0.7,
+                                               bringToFront = TRUE))%>%
+      addLegend(pal = pal, values = ~happiness, opacity = 0.7, title = NULL,
+                position = "bottomright")
+    # })
+  #
+  #
+  #
+  # #----------- Word Clous
+  # # Make the wordcloud drawing predictable during a session
+  # wordcloud_rep <- repeatable(wordcloud)
+  #
+  # output$plot <- renderPlot({
+  #   v <- twitter_data_filtered$text
+  #   wordcloud_rep(names(v), v, scale=c(4,0.5),
+  #                 min.freq = input$freq, max.words=input$max,
+  #                 colors=brewer.pal(8, "Dark2"))
+  # })
 
 
 }
