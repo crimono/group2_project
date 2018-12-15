@@ -6,7 +6,7 @@
 #' number of 'favorites' given to the tweet and the device used to send it
 #' @author group2
 #' @export
-tweets_analysis <- function(Hashtag,...) {
+tweets_analysis <- function(Hashtag = NULL,...) {
   #state dataset built in r in order to get the center of each state
   #compute the radius and build the geocode string for the twitter download
 
