@@ -48,7 +48,7 @@ tweets_analysis <- function() {
 
   # Filtering dataset
   # Keep only the useful columns
-  twitter_data_filtered <- twitter_data[, c(1, 3, 4, 5, 6, 13)]
+  twitter_data_filtered <- twitter_data[, c(1, 3, 4, 5, 6, 13, 89)]
 
   #Take out the favorite_counts larger than 3*sd(favorite_count) to avoid having
   # accounts with possibly thousands of favorites to completely bias the
@@ -68,7 +68,7 @@ tweets_analysis <- function() {
 
   tweets <- twitter_data_filtered[rep(row.names(twitter_data_filtered),
                                       twitter_data_filtered$favorite_count),
-                                  1:7]
+                                  1:8]
 
   return(tweets)
 
