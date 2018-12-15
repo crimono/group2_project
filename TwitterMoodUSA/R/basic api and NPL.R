@@ -32,8 +32,7 @@ tweets_analysis <- function(Hashtag = NULL,...) {
   if (is.null(Hashtag)) {
     for (i in 1:49) {
 
-      twitter_data_group[[i]] <- rtweet::search_tweets(q = Hashtag,
-                                                       n = 50,
+      twitter_data_group[[i]] <- rtweet::search_tweets(n = 50,
                                                        geocode = usa$geocode[i],
                                                        lang = "en",
                                                        token = NULL,
@@ -45,7 +44,8 @@ tweets_analysis <- function(Hashtag = NULL,...) {
   else {
     for (i in 1:49) {
 
-      twitter_data_group[[i]] <- rtweet::search_tweets(n = 50,
+      twitter_data_group[[i]] <- rtweet::search_tweets(q = Hashtag,
+                                                       n = 50,
                                                        geocode = usa$geocode[i],
                                                        lang = "en",
                                                        token = NULL,
