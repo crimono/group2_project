@@ -21,9 +21,22 @@ library(rtweet)
 library(sentimentr)
 library(plyr)
 library(Rcpp)
+library(tm)
+library(shinydashboard)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
+
+  tags$head(tags$style(
+    HTML('
+         #sidebar {
+         background-color: #dec4de;
+         }
+
+         body, label, input, button, select {
+         font-family: "Arial";
+         }')
+  )),
 
   # Application title
   #titlePanel("Happiness of people in the US"),
@@ -34,13 +47,23 @@ ui <- fluidPage(
   navbarPage("Mood in the US", id="nav",
 
              tabPanel("Interactive map",
-                      sidebarPanel(
-                        selectInput("Hashtag", "#What?:",
-                                    choices =
-                                      list("choice 1" = "#climate change")),
-                        checkboxInput("legend", "Show legend", TRUE)
-                      ),
-                      mainPanel(leafletOutput("mymap"))
+                      leafletOutput("mymap", width="1300px", height="600px"),
+                      absolutePanel(fixed = TRUE,
+                                    draggable = TRUE, top = 200, right = "auto",
+                                    left = 40, bottom = "auto",
+                                    width = 330, height = "auto",
+                                    selectInput("Hashtag", "#What?:",
+                                                choices =
+                                                  list("#ClimateChange" = "#ClimateChange",
+                                                       "choice 2" = "",
+                                                       "choice 3" = "")), ### We need the right hashtags
+                                    selectInput("color", "Which colors do you want to choose?:",
+                                                choices =
+                                                  list("Red and Green" = "RdYlGn",
+                                                       "Blue" = "Blues",
+                                                       "Green" = "Greens")),
+                                    plotOutput("hist", height = 200)
+                      )
              ),
 
              tabPanel("Word Cloud",
@@ -67,7 +90,6 @@ ui <- fluidPage(
   )
 )
 
-
 # Define server logic required to draw a histogram
 server <- function(input, output) {
   #tweet <- TwitterMoodUSA::tweets_analysis()
@@ -77,17 +99,17 @@ server <- function(input, output) {
 
   avg_happiness <- read.csv("Data/Average_tweets_practice2.csv")
 
-  pal <- colorQuantile(
-    palette = "Greens",
-    domain = avg_happiness[, 2],
-    n = 6)
-
   labels <- sprintf(
     "<strong>%s</strong><br/>Happiness: %g",
     avg_happiness[, 1], avg_happiness[, 2]
   ) %>% lapply(htmltools::HTML)
 
   observe({
+    pal <- colorQuantile(
+      palette = input$color,
+      domain = avg_happiness[, 2],
+      n = 6)
+
   output$mymap <- renderLeaflet({
     leaflet(data = mapStates) %>%
     addTiles()%>%
@@ -110,6 +132,19 @@ server <- function(input, output) {
     addLegend(pal = pal, values = avg_happiness[, 2], opacity = 0.7,
               title = NULL, position = "bottomright")
   })
+  })
+
+  output$hist <- renderPlot({
+    hist(tweet$happiness,
+         breaks = 49,
+         main = "Which is the general mood in the USA?",
+         xlab = "Level of happiness",
+         ylab = "Number of tweets",
+         ylim = range(1:100),
+         col = 'Blue',
+         border = 'white',
+         backgroundColor = NA) +
+      theme(plot.background = element_blank())
   })
 
 
