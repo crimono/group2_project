@@ -17,6 +17,10 @@ library(wordcloud)
 library(memoise)
 library(Rcpp)
 library(TwitterMoodUSA)
+library(rtweet)
+library(sentimentr)
+library(plyr)
+library(Rcpp)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -31,11 +35,12 @@ ui <- fluidPage(
 
              tabPanel("Interactive map",
                       sidebarPanel(
-                        numericInput("n_tweets", "Number of tweets:", 1000, 100, 5000),
-                        textInput("Hashtag", "#What?:", placeholder = "#"),
+                        selectInput("Hashtag", "#What?:",
+                                    choices =
+                                      list("choice 1" = "#climate change")),
                         checkboxInput("legend", "Show legend", TRUE)
                       ),
-                      leafletOutput("mymap")
+                      mainPanel(leafletOutput("mymap"))
              ),
 
              tabPanel("Word Cloud",
@@ -44,7 +49,7 @@ ui <- fluidPage(
                                   min = 1,  max = 50, value = 15),
                       sliderInput("max",
                                   "Maximum Number of Words:",
-                                  min = 1, max = 300, value = 100),
+                                  min = 1, max = 50, value = 30),
                       # Show Word Cloud
                       mainPanel(
                         plotOutput("plot")
@@ -65,51 +70,70 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+  #tweet <- TwitterMoodUSA::tweets_analysis()
+  tweet <- read.csv("Data/Tweets_practice2.csv")
 
-  tweet <- TwitterMoodUSA::tweets_analysis()
   mapStates = map("state", fill = TRUE, plot = FALSE)
 
+  avg_happiness <- read.csv("Data/Average_tweets_practice2.csv")
+
+  pal <- colorQuantile(
+    palette = "Greens",
+    domain = avg_happiness[, 2],
+    n = 6)
+
+  labels <- sprintf(
+    "<strong>%s</strong><br/>Happiness: %g",
+    avg_happiness[, 1], avg_happiness[, 2]
+  ) %>% lapply(htmltools::HTML)
+
+  observe({
   output$mymap <- renderLeaflet({
     leaflet(data = mapStates) %>%
-      addTiles()%>%
-      addPolygons()
+    addTiles()%>%
+    addPolygons(fillColor = ~pal(avg_happiness[, 2]),
+                weight = 2,
+                opacity = 1,
+                color = "white",
+                dashArray = "3",
+                fillOpacity = 0.7,
+                highlight = highlightOptions(weight = 5,
+                                             color = "#666",
+                                             dashArray = "",
+                                             fillOpacity = 0.7,
+                                             bringToFront = TRUE),
+                label = labels,
+                labelOptions = labelOptions(
+                  style = list("font-weight" = "normal", padding = "3px 8px"),
+                  textsize = "15px",
+                  direction = "auto"))%>%
+    addLegend(pal = pal, values = avg_happiness[, 2], opacity = 0.7,
+              title = NULL, position = "bottomright")
+  })
   })
 
 
-  # observe({
-    pal <- colorBin(
-      palette = "YlOrRd",
-      domain = tweet$happiness, bins=bins)
-
-    output$mymap <- leafletProxy("mymap", data = tweet) %>%
-      clearShapes() %>%
-      addPolygons(data = tweet$happiness, fillColor = ~pal(happiness),
-                  weight = 2,
-                  opacity = 1,
-                  color = "white",
-                  dashArray = "3",
-                  fillOpacity = 0.7,
-                  highlight = highlightOptions(weight = 5,
-                                               color = "#666",
-                                               dashArray = "",
-                                               fillOpacity = 0.7,
-                                               bringToFront = TRUE))%>%
-      addLegend(pal = pal, values = ~happiness, opacity = 0.7, title = NULL,
-                position = "bottomright")
-    # })
-  #
-  #
   #
   # #----------- Word Clous
-  # # Make the wordcloud drawing predictable during a session
-  # wordcloud_rep <- repeatable(wordcloud)
-  #
-  # output$plot <- renderPlot({
-  #   v <- twitter_data_filtered$text
-  #   wordcloud_rep(names(v), v, scale=c(4,0.5),
-  #                 min.freq = input$freq, max.words=input$max,
-  #                 colors=brewer.pal(8, "Dark2"))
-  # })
+  # Make the wordcloud drawing predictable during a session
+  wordcloud_rep <- repeatable(wordcloud)
+
+  output$plot <- renderPlot({
+    v <- paste(tweet$text, collapse=",")
+    wordcloud_rep(v, scale=c(10,2),
+                  min.freq = input$freq, max.words=input$max,
+                  colors=brewer.pal(8, "Dark2"), lang = "english",
+                  excludeWords = c("the",
+                                   "got",
+                                   "can",
+                                   "you",
+                                   "and",
+                                   "we",
+                                   "I'm",
+                                   "they",
+                                   "she",
+                                   "he"))
+  })
 
 
 }

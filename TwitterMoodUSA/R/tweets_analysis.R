@@ -2,10 +2,17 @@
 #'
 #' @description Analyses tweets in every state of the US
 #'
+#' @param Hashtag: A single string starting with a # and which must correspond
+#' to an existing # on Twitter
+#' @param ...: Any additional Hastags the user wants to see. The function will
+#' look for tweets having all the coresponding hashtags mentionned by the user,
+#' not any of them
+#'
 #' @return A table containing the user name of the twitter user, the text, the
 #' number of 'favorites' given to the tweet and the device used to send it
 #' @author group2
 #' @export
+#' @example tweet_analysis(#ClimateChange, #Trump)
 tweets_analysis <- function(Hashtag = NULL,...) {
   #state dataset built in r in order to get the center of each state
   #compute the radius and build the geocode string for the twitter download
@@ -32,7 +39,7 @@ tweets_analysis <- function(Hashtag = NULL,...) {
   if (is.null(Hashtag)) {
     for (i in 1:49) {
 
-      twitter_data_group[[i]] <- rtweet::search_tweets(n = 50,
+      twitter_data_group[[i]] <- rtweet::search_tweets(n = 20,
                                                        geocode = usa$geocode[i],
                                                        lang = "en",
                                                        token = NULL,
@@ -45,7 +52,7 @@ tweets_analysis <- function(Hashtag = NULL,...) {
     for (i in 1:49) {
 
       twitter_data_group[[i]] <- rtweet::search_tweets(q = Hashtag,
-                                                       n = 50,
+                                                       n = 20,
                                                        geocode = usa$geocode[i],
                                                        lang = "en",
                                                        token = NULL,
@@ -75,7 +82,8 @@ tweets_analysis <- function(Hashtag = NULL,...) {
 
   # Measure the happiness
   # happiness_score <- sentimentr::sentiment_by(twitter_data_filtered$text)
-  happiness_score <- sentimentr::sentiment_by(sentimentr::get_sentences(twitter_data_filtered$text))
+  happiness_score <- sentimentr::sentiment_by(sentimentr::get_sentences
+                             (twitter_data_filtered$text))
 
   twitter_data_filtered$happiness <- happiness_score$ave_sentiment
 
@@ -85,18 +93,7 @@ tweets_analysis <- function(Hashtag = NULL,...) {
                                       twitter_data_filtered$favorite_count),
                                   1:8]
 
+  tweets <- as.data.frame(tweets)
+
   return(tweets)
-
-  # Easier to just multiply the score by value of favorite_count but on the other
-  # hand, if we want to plot the histogram of happiness on Shiny, will be wrong
-
-  #----------
-
-  # Plotting the data on a US map
-  # tw <- lat_lng(tw)
-  #
-  # ## plot state boundaries
-  # par(mar = c(0, 0, 0, 0))
-  # maps::map("state", lwd = .25)
-  # with(tw, points(lng, lat, pch = 20, cex = .75, col = rgb(0, .3, .7, .75)))
 }
