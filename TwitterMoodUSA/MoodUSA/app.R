@@ -24,6 +24,7 @@ library(Rcpp)
 library(tm)
 library(shinydashboard)
 library(RJSONIO)
+library(ECharts2Shiny)
 
 trendingplaces <- as.list(read.csv("Data/Cities for trending topics.csv"))
 
@@ -51,7 +52,7 @@ ui <- fluidPage(
   navbarPage("Mood in the US", id="nav",
 
              tabPanel("Interactive map",
-                      leafletOutput("mymap", width="100%", height="700px"),
+                      leafletOutput("mymap", width="100%", height="600px"),
                       absolutePanel(fixed = TRUE,
                                     draggable = TRUE, top = 200, right = "auto",
                                     left = 40, bottom = "auto",
@@ -81,8 +82,6 @@ ui <- fluidPage(
                                         textInput("text", "How is the US feeling about...", value = "Write your topic or hashtag here"),
                                         actionButton("action3", label = "Launch New Search")
                                       )
-
-                                       ### We need the right hashtags
                                     )
 
                       ),
@@ -151,12 +150,61 @@ server <- function(input, output) {
   #   # TwitterMoodUSA::tweets_analysis(input$text),
   # })
 
-  tweet <- read.csv("Data/Tweets_practice2.csv")
+  tweet <- read.csv("Data/newtweetsdownload.csv")
 
-  mapStates = map("state", fill = TRUE, plot = FALSE)
+  mapStates = map("state", regions = c("alabama",
+                                       "alaska",
+                                       "arizona",
+                                       "arkansas",
+                                       "california",
+                                       "colorado",
+                                       "connecticut",
+                                       "delaware",
+                                       "florida",
+                                       "georgia",
+                                       "hawaii",
+                                       "idaho",
+                                       "illinois",
+                                       "indiana",
+                                       "iowa",
+                                       "kansas",
+                                       "kentucky",
+                                       "louisiana",
+                                       "maine",
+                                       "maryland",
+                                       "massachusetts:main",
+                                       "michigan:north",
+                                       "minnesota",
+                                       "mississippi",
+                                       "missouri",
+                                       "montana",
+                                       "nebraska",
+                                       "nevada",
+                                       "new hampshire",
+                                       "new jersey",
+                                       "new mexico",
+                                       "new york:main",
+                                       "north carolina:main",
+                                       "north dakota",
+                                       "ohio",
+                                       "oklahoma",
+                                       "oregon",
+                                       "pennsylvania",
+                                       "rhode island",
+                                       "south carolina",
+                                       "south dakota",
+                                       "tennessee",
+                                       "texas",
+                                       "utah",
+                                       "vermont",
+                                       "virginia:main",
+                                       "washington:main",
+                                       "west virginia",
+                                       "wisconsin",
+                                       "wyoming"), fill = TRUE, plot = FALSE)
 
   # avg_happiness <- TwitterMoodUSA::average_state_score(tweet)
-  avg_happiness <- read.csv("Data/Average_tweets_practice2.csv")
+  avg_happiness <- read.csv("Data/avgnewtweetsdownload.csv")
 
   labels <- sprintf(
     "<strong>%s</strong><br/>Happiness: %g",
@@ -170,7 +218,7 @@ server <- function(input, output) {
       n = 6)
 
   output$mymap <- renderLeaflet({
-    leaflet(data = mapStates) %>%
+    leaflet(data = mapStates)%>% #data = mapStates) %>%
     addTiles()%>%
     addPolygons(fillColor = ~pal(avg_happiness[, 2]),
                 weight = 2,
@@ -214,21 +262,21 @@ server <- function(input, output) {
   wordcloud_rep <- repeatable(wordcloud)
 
   output$plot <- renderPlot({
-    v <- paste(tweet$text, collapse=",")
-    wordcloud_rep(v, scale=c(10,2),
-                  min.freq = input$freq, max.words=input$max,
-                  colors=brewer.pal(8, "Dark2"), lang = "english",
-                  excludeWords = c("the",
-                                   "got",
-                                   "can",
-                                   "you",
-                                   "and",
-                                   "we",
-                                   "I'm",
-                                   "they",
-                                   "she",
-                                   "he"))
-  })
+     v <- paste(tweet$text, collapse=",")
+     wordcloud_rep(v, scale=c(6,2),
+                   min.freq = input$freq, max.words=input$max,
+                   colors=brewer.pal(8, "Dark2"), lang = "english",
+                   removeWords = c("the",
+                                    "got",
+                                    "can",
+                                    "you",
+                                    "and",
+                                    "we",
+                                    "I'm",
+                                    "they",
+                                    "she",
+                                    "he"))
+   })
 
 
 }
