@@ -50,7 +50,7 @@ ui <- fluidPage(
   navbarPage("Mood in the US", id="nav",
 
              tabPanel("Interactive map",
-                      leafletOutput("mymap", width="1300px", height="600px"),
+                      leafletOutput("mymap", width="100%", height="700px"),
                       absolutePanel(fixed = TRUE,
                                     draggable = TRUE, top = 200, right = "auto",
                                     left = 40, bottom = "auto",
@@ -82,14 +82,20 @@ ui <- fluidPage(
                                       )
 
                                        ### We need the right hashtags
-                                    ),
-                                    selectInput("color", "Which colors do you want to choose?:",
-                                                choices =
-                                                  list("Red and Green" = "RdYlGn",
-                                                       "Blue" = "Blues",
-                                                       "Green" = "Greens")),
-                                    plotOutput("hist", height = 200),
-                                    tags$head(tags$script(src = "message-handler.js"))
+                                    )
+
+                      ),
+                      absolutePanel(fixed = TRUE,
+                                    draggable = TRUE, top = 200, left = "auto",
+                                    right = 40, bottom = "auto",
+                                    width = 330, height = "auto",
+                        selectInput("color", "Which colors do you want to choose?:",
+                                    choices =
+                                      list("Red and Green" = "RdYlGn",
+                                           "Blue" = "Blues",
+                                           "Green" = "Greens")),
+                        plotOutput("hist", height = 200),
+                        tags$head(tags$script(src = "message-handler.js"))
                       )
              ),
 
@@ -124,6 +130,7 @@ server <- function(input, output) {
 
   output$trendingtopics <- renderUI({
     topics <- TwitterMoodUSA::trending(input$GetTrending)
+    selectInput("trendingnow", "Trending Topics", choices = (topics = topics))
   })
 
   # tweet <- eventReactive(input$action1, {
@@ -137,9 +144,6 @@ server <- function(input, output) {
   # tweet <- eventReactive(input$action3, {
   #   # TwitterMoodUSA::tweets_analysis(input$text),
   # })
-
-
-
 
   tweet <- read.csv("Data/Tweets_practice2.csv")
 
