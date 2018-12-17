@@ -67,11 +67,7 @@ ui <- fluidPage(
                                         condition = "input.TopRes == 1",
                                         selectInput("GetTrending", "Trends from...",
                                                     choices = (trendingplaces[2] = trendingplaces[1])),
-                                        selectInput("Hashtag", "How is the US feeling about...",
-                                                    choices =
-                                                      list("#ClimateChange" = "#ClimateChange",
-                                                           "choice 2" = "",
-                                                           "choice 3" = ""))
+                                        uiOutput("trendingtopics")
                                       ),
                                       conditionalPanel(
                                         condition = "input.TopRes == 2",
@@ -80,7 +76,7 @@ ui <- fluidPage(
 
                                        ### We need the right hashtags
                                     ),
-
+                                    actionButton("action", label = "Launch New Search"),
                                     selectInput("color", "Which colors do you want to choose?:",
                                                 choices =
                                                   list("Red and Green" = "RdYlGn",
@@ -118,6 +114,12 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+
+  output$trendingtopics <- renderUI({
+    topics <- TwitterMoodUSA::trending(input$GetTrending)
+    selectInput("trendingnow", "Choose Topic", choices = (topics = topics))
+  })
+
   #tweet <- TwitterMoodUSA::tweets_analysis()
   tweet <- read.csv("Data/Tweets_practice2.csv")
 
