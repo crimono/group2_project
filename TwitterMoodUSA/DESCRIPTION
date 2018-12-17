@@ -10,7 +10,7 @@ Author: c(person(("Louis", "Polet", email = "louis.polet@me.com",
 Maintainer: <louis.polet@unil.ch>
 Description: This package allows the user to get an idea of the happiness level 
     of Americans through the content of the tweets that were posted the same day.
-    Batches of 1000 tweets are downloaded for each state of the US, with the 
+    Batches of tweets are downloaded for each state of the US, with the 
     exception of Hawaii which doesn't have enough tweets available for a proper 
     sentiment analysis.Through the sentimentr package, the tweets are analysed and a 
     'happiness' score is given to each tweet, with extra weight given to tweets 
@@ -24,5 +24,7 @@ Imports:
     Rcpp (>= 1.0.0),
     rtweet (>= 0.6.8.9000),
     plyr(>= 1.8.4),
-    sentimentr (>= 2.6.1)
+    sentimentr (>= 2.6.1),
+    dplyr (>= 0.7.8),
+    scales (>= 1.0.0)
 RoxygenNote: 6.1.1

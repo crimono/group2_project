@@ -24,6 +24,8 @@ library(Rcpp)
 library(tm)
 library(shinydashboard)
 
+trendingplaces <- as.list(read.csv("Data/Cities for trending topics.csv"))
+
 # Define UI for application that draws a histogram
 ui <- fluidPage(
 
@@ -52,11 +54,33 @@ ui <- fluidPage(
                                     draggable = TRUE, top = 200, right = "auto",
                                     left = 40, bottom = "auto",
                                     width = 330, height = "auto",
-                                    selectInput("Hashtag", "#What?:",
+                                    selectInput("focus", "See happiness for...",
                                                 choices =
-                                                  list("#ClimateChange" = "#ClimateChange",
-                                                       "choice 2" = "",
-                                                       "choice 3" = "")), ### We need the right hashtags
+                                                  list("All Tweets" = "All Tweets",
+                                                       "A specific topic" = "A specific topic")),
+                                    conditionalPanel(
+                                      condition = "input.focus == 'A specific topic'",
+                                      radioButtons("TopRes", "Which topic research?",
+                                                   choices = list("Get Trending Topics" = 1, "Choose my own topic" = 2),
+                                                   selected = 1),
+                                      conditionalPanel(
+                                        condition = "input.TopRes == 1",
+                                        selectInput("GetTrending", "Trends from...",
+                                                    choices = (trendingplaces[2] = trendingplaces[1])),
+                                        selectInput("Hashtag", "How is the US feeling about...",
+                                                    choices =
+                                                      list("#ClimateChange" = "#ClimateChange",
+                                                           "choice 2" = "",
+                                                           "choice 3" = ""))
+                                      ),
+                                      conditionalPanel(
+                                        condition = "input.TopRes == 2",
+                                        textInput("text", "How is the US feeling about...", value = "Write your topic or hashtag here")
+                                      )
+
+                                       ### We need the right hashtags
+                                    ),
+
                                     selectInput("color", "Which colors do you want to choose?:",
                                                 choices =
                                                   list("Red and Green" = "RdYlGn",
@@ -89,6 +113,8 @@ ui <- fluidPage(
              )
   )
 )
+
+
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
