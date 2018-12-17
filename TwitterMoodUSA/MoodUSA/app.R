@@ -87,17 +87,22 @@ ui <- fluidPage(
 
                       ),
                       absolutePanel(fixed = TRUE,
-                                    draggable = TRUE, top = 200, left = "auto",
+                                    draggable = TRUE, top = 100, left = "auto",
                                     right = 40, bottom = "auto",
                                     width = 330, height = "auto",
                         selectInput("color", "Which colors do you want to choose?",
                                     choices =
                                       list("Red and Green" = "RdYlGn",
                                            "Blue" = "Blues",
-                                           "Green" = "Greens")),
-                        plotOutput("hist", height = 200),
-                        tags$head(tags$script(src = "message-handler.js"))
+                                           "Green" = "Greens"))
+                      ),
+                      absolutePanel(fixed = TRUE,
+                                    draggable = TRUE, top = 400, left = "auto",
+                                    right = 40, bottom = "auto",
+                                    width = 330, height = "auto",
+                        plotOutput("hist", height = 200)
                       )
+
              ),
 
              tabPanel("Word Cloud",
