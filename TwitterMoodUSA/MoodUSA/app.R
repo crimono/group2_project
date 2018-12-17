@@ -59,6 +59,10 @@ ui <- fluidPage(
                                                   list("All Tweets" = "All Tweets",
                                                        "A specific topic" = "A specific topic")),
                                     conditionalPanel(
+                                      condition = "input.focus == 'All Tweets'",
+                                      actionButton("action1", label = "Launch New Search")
+                                    ),
+                                    conditionalPanel(
                                       condition = "input.focus == 'A specific topic'",
                                       radioButtons("TopRes", "Which topic research?",
                                                    choices = list("Get Trending Topics" = 1, "Choose my own topic" = 2),
@@ -67,16 +71,17 @@ ui <- fluidPage(
                                         condition = "input.TopRes == 1",
                                         selectInput("GetTrending", "Trends from...",
                                                     choices = (trendingplaces[2] = trendingplaces[1])),
-                                        uiOutput("trendingtopics")
+                                        uiOutput("trendingtopics"),
+                                        actionButton("action2", label = "Launch New Search")
                                       ),
                                       conditionalPanel(
                                         condition = "input.TopRes == 2",
-                                        textInput("text", "How is the US feeling about...", value = "Write your topic or hashtag here")
+                                        textInput("text", "How is the US feeling about...", value = "Write your topic or hashtag here"),
+                                        actionButton("action3", label = "Launch New Search")
                                       )
 
                                        ### We need the right hashtags
                                     ),
-                                    actionButton("action", label = "Launch New Search"),
                                     selectInput("color", "Which colors do you want to choose?:",
                                                 choices =
                                                   list("Red and Green" = "RdYlGn",
@@ -120,7 +125,18 @@ server <- function(input, output) {
     selectInput("trendingnow", "Choose Topic", choices = (topics = topics))
   })
 
-  #tweet <- TwitterMoodUSA::tweets_analysis()
+  # tweet <- eventReactive(input$action1, {
+  #   TwitterMoodUSA::tweets_analysis()
+  # })
+  #
+  # tweet <- eventReactive(input$action2, {
+  #   TwitterMoodUSA::tweets_analysis(input$trendingtopics)
+  # })
+  #
+  # tweet <- eventReactive(input$action3, {
+  #   TwitterMoodUSA::tweets_analysis(input$text)
+  # })
+
   tweet <- read.csv("Data/Tweets_practice2.csv")
 
   mapStates = map("state", fill = TRUE, plot = FALSE)
