@@ -182,18 +182,19 @@ server <- function(input, output) {
   })
   })
 
+
   output$hist <- renderPlot({
-    hist(tweet$happiness,
-         breaks = 49,
-         main = "Which is the general mood in the USA?",
-         xlab = "Level of happiness",
-         ylab = "Number of tweets",
-         ylim = range(1:100),
-         col = 'Blue',
-         border = 'white',
-         backgroundColor = NA) +
-      theme(plot.background = element_blank())
-  })
+    ggplot(data=tweet, aes (tweet$happiness)) +
+      geom_histogram(col="black",
+                     fill="black",
+                     alpha = .3) +
+      labs(title="Which is the general mood in the USA?") +
+      labs(x="Level of happiness", y="Number of tweets") +
+      theme(plot.background = element_rect(fill = "transparent",colour = NA),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.background = element_rect(fill = "transparent",colour = NA))
+  },bg="transparent")
 
 
   #
