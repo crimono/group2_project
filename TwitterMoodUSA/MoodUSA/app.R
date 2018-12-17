@@ -23,6 +23,7 @@ library(plyr)
 library(Rcpp)
 library(tm)
 library(shinydashboard)
+library(RJSONIO)
 
 trendingplaces <- as.list(read.csv("Data/Cities for trending topics.csv"))
 
@@ -87,7 +88,8 @@ ui <- fluidPage(
                                                   list("Red and Green" = "RdYlGn",
                                                        "Blue" = "Blues",
                                                        "Green" = "Greens")),
-                                    plotOutput("hist", height = 200)
+                                    plotOutput("hist", height = 200),
+                                    tags$head(tags$script(src = "message-handler.js"))
                       )
              ),
 
@@ -122,20 +124,22 @@ server <- function(input, output) {
 
   output$trendingtopics <- renderUI({
     topics <- TwitterMoodUSA::trending(input$GetTrending)
-    selectInput("trendingnow", "Choose Topic", choices = (topics = topics))
   })
 
   # tweet <- eventReactive(input$action1, {
-  #   TwitterMoodUSA::tweets_analysis()
+  #   # TwitterMoodUSA::tweets_analysis(),
   # })
   #
   # tweet <- eventReactive(input$action2, {
-  #   TwitterMoodUSA::tweets_analysis(input$trendingtopics)
+  #   # TwitterMoodUSA::tweets_analysis(input$trendingtopics),
   # })
   #
   # tweet <- eventReactive(input$action3, {
-  #   TwitterMoodUSA::tweets_analysis(input$text)
+  #   # TwitterMoodUSA::tweets_analysis(input$text),
   # })
+
+
+
 
   tweet <- read.csv("Data/Tweets_practice2.csv")
 
