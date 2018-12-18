@@ -9,7 +9,6 @@
 
 library(shiny)
 library(leaflet)
-library(tidyverse)
 library(ggplot2)
 library(ggforce)
 library(maps)
@@ -20,12 +19,12 @@ library(TwitterMoodUSA)
 library(rtweet)
 library(sentimentr)
 library(plyr)
-library(Rcpp)
+library(dplyr)
 library(tm)
 library(shinydashboard)
 library(geojsonio)
-library(devtools)
-library(githubinstall)
+
+
 
 
 trendingplaces <- as.list(read.csv("Data/Cities for trending topics.csv"))
@@ -140,22 +139,25 @@ server <- function(input, output) {
     selectInput("trendingnow", "Trending Topics", choices = (topics = topics))
   })
 
-  tweet <- TwitterMoodUSA::tweets_analysis()
-  tweet_overall <- tweet
+  tweet <- read.csv("Data/tweets2.csv")
 
-  tweet <- eventReactive(input$action1, {
-    tweet_overall
-  })
+  # tweet <- TwitterMoodUSA::tweets_analysis()
+  # tweet <- as.data.frame(tweet)
 
-  tweet <- eventReactive(input$action2, {
-    TwitterMoodUSA::tweets_analysis(input$trendingtopics)
-  })
-
-  tweet <- eventReactive(input$action3, {
-    TwitterMoodUSA::tweets_analysis(input$text)
-  })
-
-  # tweet <- read.csv("Data/newtweetsdownload.csv")
+  # tweet_overall <- tweet
+  #
+  # tweet <- eventReactive(input$action1, {
+  #   tweet_overall
+  # })
+  #
+  # tweet <- eventReactive(input$action2, {
+  #   TwitterMoodUSA::tweets_analysis(input$trendingtopics)
+  #
+  # })
+  #
+  # tweet <- eventReactive(input$action3, {
+  #   TwitterMoodUSA::tweets_analysis(input$text)
+  # })
 
   avg_happiness <- TwitterMoodUSA::average_state_score(tweet)
 
