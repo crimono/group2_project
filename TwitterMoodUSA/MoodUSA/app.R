@@ -235,11 +235,10 @@ server <- function(input, output) {
   #
   observeEvent(input$action2, {
     # tweet <- TwitterMoodUSA::tweets_analysis(input$trendingtopics)
-    tweet <- read_csv("Data/tweets5.csv")
+    tweet <- read.csv("Data/tweets5.csv")
 
-    #avg_happiness <- TwitterMoodUSA::average_state_score(tweet)
+    avg_happiness <- TwitterMoodUSA::average_state_score(tweet)
 
-    avg_happiness <- read.csv("Data/avgnewtweetsdownload.csv")
     states <- geojsonio::geojson_read("Data/gz_2010_us_040_00_5m.json", what = "sp")
     states <- states[-52, ]
     states <- states[-12, ]
@@ -318,7 +317,7 @@ server <- function(input, output) {
   #
   observeEvent(input$action3, {
     # TwitterMoodUSA::tweets_analysis(input$text)
-    tweet <- read_csv("Data/tweets2.csv")
+    tweet <- read.csv("Data/tweets2.csv")
 
     avg_happiness <- TwitterMoodUSA::average_state_score(tweet)
 
