@@ -9,7 +9,7 @@
 
 library(shiny)
 library(leaflet)
-library(dplyr)
+library(tidyverse)
 library(ggplot2)
 library(ggforce)
 library(maps)
@@ -23,9 +23,10 @@ library(plyr)
 library(Rcpp)
 library(tm)
 library(shinydashboard)
-library(RJSONIO)
+library(geojsonio)
 library(devtools)
 library(githubinstall)
+
 
 trendingplaces <- as.list(read.csv("Data/Cities for trending topics.csv"))
 
@@ -53,7 +54,7 @@ ui <- fluidPage(
   navbarPage("Mood in the US", id="nav",
 
              tabPanel("Interactive map",
-                      leafletOutput("mymap", width="100%", height="600px"),
+                      leafletOutput("mymap", width="100%", height="670px"),
                       absolutePanel(fixed = TRUE,
                                     draggable = TRUE, top = 200, right = "auto",
                                     left = 40, bottom = "auto",
@@ -97,7 +98,7 @@ ui <- fluidPage(
                                            "Green" = "Greens"))
                       ),
                       absolutePanel(fixed = TRUE,
-                                    draggable = TRUE, top = 400, left = "auto",
+                                    draggable = TRUE, top = 395, left = "auto",
                                     right = 40, bottom = "auto",
                                     width = 330, height = "auto",
                         plotOutput("hist", height = 200)
@@ -139,23 +140,26 @@ server <- function(input, output) {
     selectInput("trendingnow", "Trending Topics", choices = (topics = topics))
   })
 
-  # tweet <- eventReactive(input$action1, {
-  #   # TwitterMoodUSA::tweets_analysis(),
-  # })
-  #
-  # tweet <- eventReactive(input$action2, {
-  #   # TwitterMoodUSA::tweets_analysis(input$trendingtopics),
-  # })
-  #
-  # tweet <- eventReactive(input$action3, {
-  #   # TwitterMoodUSA::tweets_analysis(input$text),
-  # })
+  tweet <- TwitterMoodUSA::tweets_analysis()
+  tweet_overall <- tweet
 
-  tweet <- read.csv("Data/newtweetsdownload.csv")
+  tweet <- eventReactive(input$action1, {
+    tweet_overall
+  })
 
-  # avg_happiness <- TwitterMoodUSA::average_state_score(tweet)
+  tweet <- eventReactive(input$action2, {
+    TwitterMoodUSA::tweets_analysis(input$trendingtopics)
+  })
 
-  avg_happiness <- read.csv("Data/Average_tweets_practice2.csv")
+  tweet <- eventReactive(input$action3, {
+    TwitterMoodUSA::tweets_analysis(input$text)
+  })
+
+  # tweet <- read.csv("Data/newtweetsdownload.csv")
+
+  avg_happiness <- TwitterMoodUSA::average_state_score(tweet)
+
+  # avg_happiness <- read.csv("Data/avgnewtweetsdownload.csv")
   states <- geojsonio::geojson_read("Data/gz_2010_us_040_00_5m.json", what = "sp")
   states <- states[-52, ]
   states <- states[-12, ]
