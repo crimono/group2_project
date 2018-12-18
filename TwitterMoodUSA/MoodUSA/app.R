@@ -57,7 +57,7 @@ ui <- fluidPage(
   navbarPage("Mood in the US", id="nav",
 
              tabPanel("Interactive map",
-                      leafletOutput("mymap", width="100%", height="670px"),
+                      leafletOutput("mymap", width="100%", height="800px"),
                       absolutePanel(fixed = TRUE,
                                     draggable = TRUE, top = 200, right = "auto",
                                     left = 40, bottom = "auto",
