@@ -22,13 +22,16 @@ library(plyr)
 library(dplyr)
 library(tm)
 library(shinydashboard)
+library(RJSONIO)
+library(devtools)
+library(githubinstall)
+library(ECharts2Shiny)
 library(geojsonio)
 library(DT)
 
 
-
-
 trendingplaces <- as.list(read.csv("Data/Cities for trending topics.csv"))
+
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -110,12 +113,14 @@ ui <- fluidPage(
                       sliderInput("freq",
                                   "Minimum Frequency:",
                                   min = 1,  max = 50, value = 15),
-                      sliderInput("max",
-                                  "Maximum Number of Words:",
-                                  min = 1, max = 50, value = 30),
+                      #sliderInput("max",
+                      #            "Maximum Number of Words:",
+                      #            min = 1, max = 50, value = 30),
                       # Show Word Cloud
                       mainPanel(
-                        plotOutput("plot")
+                        loadEChartsLibrary(),
+                        tags$div(id="test", style="width:100%;height:500px;"),
+                        deliverChart(div_id = "test")
                       )
              ),
 
@@ -140,25 +145,272 @@ server <- function(input, output) {
     selectInput("trendingnow", "Trending Topics", choices = (topics = topics))
   })
 
-  tweet <- read.csv("Data/tweets2.csv")
+  tweet <- read.csv("Data/tweets4.csv")
 
   # tweet <- TwitterMoodUSA::tweets_analysis()
   # tweet <- as.data.frame(tweet)
 
-  # tweet_overall <- tweet
+  tweet_overall <- tweet
+
+  observeEvent(input$action1, {
+    tweet <- tweet_overall
+
+    avg_happiness <- TwitterMoodUSA::average_state_score(tweet)
+
+    # avg_happiness <- read.csv("Data/avgnewtweetsdownload.csv")
+    states <- geojsonio::geojson_read("Data/gz_2010_us_040_00_5m.json", what = "sp")
+    states <- states[-52, ]
+    states <- states[-12, ]
+    states <- states[-9, ]
+    states$happiness <- avg_happiness$V2
+
+    labels <- sprintf(
+      "<strong>%s</strong><br/>Happiness: %g",
+      avg_happiness[, 1], states$happiness
+    ) %>% lapply(htmltools::HTML)
+
+    observe({
+      pal <- colorQuantile(
+        palette = input$color,
+        domain = states$happiness,
+        n = 6)
+
+      output$mymap <- renderLeaflet({
+
+        leaflet(data = states) %>%
+          addTiles()%>%
+          addPolygons(fillColor = ~pal(states$happiness),
+                      weight = 2,
+                      opacity = 1,
+                      color = "white",
+                      dashArray = "3",
+                      fillOpacity = 0.7,
+                      highlight = highlightOptions(weight = 5,
+                                                   color = "#666",
+                                                   dashArray = "",
+                                                   fillOpacity = 0.7,
+                                                   bringToFront = TRUE),
+                      label = labels,
+                      labelOptions = labelOptions(
+                        style = list("font-weight" = "normal", padding = "3px 8px"),
+                        textsize = "15px",
+                        direction = "auto"))%>%
+          addLegend(pal = pal, values = avg_happiness[, 2], opacity = 0.7,
+                    title = NULL, position = "bottomright")
+      })
+    })
+
+
+    output$hist <- renderPlot({
+      ggplot(data=tweet, aes (tweet$happiness)) +
+        geom_histogram(col="black",
+                       fill="black",
+                       alpha = .3) +
+        labs(title="Which is the general mood in the USA?") +
+        labs(x="Level of happiness", y="Number of tweets") +
+        theme(plot.background = element_rect(fill = "transparent",colour = NA),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.background = element_rect(fill = "transparent",colour = NA))
+    },bg="transparent")
+
+    v <- paste(tweet$text, collapse=",")
+    v <- Corpus(VectorSource(v))
+    v <- tm_map(v, content_transformer(tolower))
+    v <- tm_map(v, removeNumbers)
+    v <- tm_map(v, removeWords, stopwords("english"))
+    v <- tm_map(v, removeWords, c("blabla1", "blabla2"))
+    v <- tm_map(v, removePunctuation)
+    v <- tm_map(v, stripWhitespace)
+    dtm <- TermDocumentMatrix(v)
+    m <- as.matrix(dtm)
+    v2 <- sort(rowSums(m),decreasing=TRUE)
+    d <- data.frame(name = names(v2), value=v2)
+
+    observe({
+      d <- d[(d$value >= input$freq),]
+      output$plot <- renderWordcloud("test", data = d,
+                                     grid_size = 10, sizeRange = c(20, 60))
+    })
+  })
   #
-  # tweet <- eventReactive(input$action1, {
-  #   tweet_overall
-  # })
+  observeEvent(input$action2, {
+    # tweet <- TwitterMoodUSA::tweets_analysis(input$trendingtopics)
+    tweet <- read.csv("Data/tweets5.csv")
+
+    avg_happiness <- TwitterMoodUSA::average_state_score(tweet)
+
+    states <- geojsonio::geojson_read("Data/gz_2010_us_040_00_5m.json", what = "sp")
+    states <- states[-52, ]
+    states <- states[-12, ]
+    states <- states[-9, ]
+    states$happiness <- avg_happiness$V2
+
+    labels <- sprintf(
+      "<strong>%s</strong><br/>Happiness: %g",
+      avg_happiness[, 1], states$happiness
+    ) %>% lapply(htmltools::HTML)
+
+    observe({
+      pal <- colorQuantile(
+        palette = input$color,
+        domain = states$happiness,
+        n = 6)
+
+      output$mymap <- renderLeaflet({
+
+        leaflet(data = states) %>%
+          addTiles()%>%
+          addPolygons(fillColor = ~pal(states$happiness),
+                      weight = 2,
+                      opacity = 1,
+                      color = "white",
+                      dashArray = "3",
+                      fillOpacity = 0.7,
+                      highlight = highlightOptions(weight = 5,
+                                                   color = "#666",
+                                                   dashArray = "",
+                                                   fillOpacity = 0.7,
+                                                   bringToFront = TRUE),
+                      label = labels,
+                      labelOptions = labelOptions(
+                        style = list("font-weight" = "normal", padding = "3px 8px"),
+                        textsize = "15px",
+                        direction = "auto"))%>%
+          addLegend(pal = pal, values = avg_happiness[, 2], opacity = 0.7,
+                    title = NULL, position = "bottomright")
+      })
+    })
+
+
+    output$hist <- renderPlot({
+      ggplot(data=tweet, aes (tweet$happiness)) +
+        geom_histogram(col="black",
+                       fill="black",
+                       alpha = .3) +
+        labs(title="Which is the general mood in the USA?") +
+        labs(x="Level of happiness", y="Number of tweets") +
+        theme(plot.background = element_rect(fill = "transparent",colour = NA),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.background = element_rect(fill = "transparent",colour = NA))
+    },bg="transparent")
+
+    v <- paste(tweet$text, collapse=",")
+    v <- Corpus(VectorSource(v))
+    v <- tm_map(v, content_transformer(tolower))
+    v <- tm_map(v, removeNumbers)
+    v <- tm_map(v, removeWords, stopwords("english"))
+    v <- tm_map(v, removeWords, c("blabla1", "blabla2"))
+    v <- tm_map(v, removePunctuation)
+    v <- tm_map(v, stripWhitespace)
+    dtm <- TermDocumentMatrix(v)
+    m <- as.matrix(dtm)
+    v2 <- sort(rowSums(m),decreasing=TRUE)
+    d <- data.frame(name = names(v2), value=v2)
+
+    observe({
+      d <- d[(d$value >= input$freq),]
+      output$plot <- renderWordcloud("test", data = d,
+                                     grid_size = 10, sizeRange = c(20, 60))
+    })
+  })
   #
-  # tweet <- eventReactive(input$action2, {
-  #   TwitterMoodUSA::tweets_analysis(input$trendingtopics)
-  #
-  # })
-  #
-  # tweet <- eventReactive(input$action3, {
-  #   TwitterMoodUSA::tweets_analysis(input$text)
-  # })
+  observeEvent(input$action3, {
+    # TwitterMoodUSA::tweets_analysis(input$text)
+    tweet <- read.csv("Data/tweets2.csv")
+
+    avg_happiness <- TwitterMoodUSA::average_state_score(tweet)
+
+    # avg_happiness <- read.csv("Data/avgnewtweetsdownload.csv")
+    states <- geojsonio::geojson_read("Data/gz_2010_us_040_00_5m.json", what = "sp")
+    states <- states[-52, ]
+    states <- states[-12, ]
+    states <- states[-9, ]
+    states$happiness <- avg_happiness$V2
+
+    labels <- sprintf(
+      "<strong>%s</strong><br/>Happiness: %g",
+      avg_happiness[, 1], states$happiness
+    ) %>% lapply(htmltools::HTML)
+
+    observe({
+      pal <- colorQuantile(
+        palette = input$color,
+        domain = states$happiness,
+        n = 6)
+
+      output$mymap <- renderLeaflet({
+
+        leaflet(data = states) %>%
+          addTiles()%>%
+          addPolygons(fillColor = ~pal(states$happiness),
+                      weight = 2,
+                      opacity = 1,
+                      color = "white",
+                      dashArray = "3",
+                      fillOpacity = 0.7,
+                      highlight = highlightOptions(weight = 5,
+                                                   color = "#666",
+                                                   dashArray = "",
+                                                   fillOpacity = 0.7,
+                                                   bringToFront = TRUE),
+                      label = labels,
+                      labelOptions = labelOptions(
+                        style = list("font-weight" = "normal", padding = "3px 8px"),
+                        textsize = "15px",
+                        direction = "auto"))%>%
+          addLegend(pal = pal, values = avg_happiness[, 2], opacity = 0.7,
+                    title = NULL, position = "bottomright")
+      })
+    })
+
+
+    output$hist <- renderPlot({
+      ggplot(data=tweet, aes (tweet$happiness)) +
+        geom_histogram(col="black",
+                       fill="black",
+                       alpha = .3) +
+        labs(title="Which is the general mood in the USA?") +
+        labs(x="Level of happiness", y="Number of tweets") +
+        theme(plot.background = element_rect(fill = "transparent",colour = NA),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.background = element_rect(fill = "transparent",colour = NA))
+    },bg="transparent")
+
+    v <- paste(tweet$text, collapse=",")
+    v <- Corpus(VectorSource(v))
+    v <- tm_map(v, content_transformer(tolower))
+    v <- tm_map(v, removeNumbers)
+    v <- tm_map(v, removeWords, stopwords("english"))
+    v <- tm_map(v, removeWords, c("blabla1", "blabla2"))
+    v <- tm_map(v, removePunctuation)
+    v <- tm_map(v, stripWhitespace)
+    dtm <- TermDocumentMatrix(v)
+    m <- as.matrix(dtm)
+    v2 <- sort(rowSums(m),decreasing=TRUE)
+    d <- data.frame(name = names(v2), value=v2)
+
+    observe({
+      d <- d[(d$value >= input$freq),]
+      output$plot <- renderWordcloud("test", data = d,
+                                     grid_size = 10, sizeRange = c(20, 60))
+    })
+  })
+
+  v <- paste(tweet$text, collapse=",")
+  v <- Corpus(VectorSource(v))
+  v <- tm_map(v, content_transformer(tolower))
+  v <- tm_map(v, removeNumbers)
+  v <- tm_map(v, removeWords, stopwords("english"))
+  v <- tm_map(v, removeWords, c("blabla1", "blabla2"))
+  v <- tm_map(v, removePunctuation)
+  v <- tm_map(v, stripWhitespace)
+  dtm <- TermDocumentMatrix(v)
+  m <- as.matrix(dtm)
+  v2 <- sort(rowSums(m),decreasing=TRUE)
+  d <- data.frame(name = names(v2), value=v2)
 
   avg_happiness <- TwitterMoodUSA::average_state_score(tweet)
 
@@ -223,27 +475,16 @@ server <- function(input, output) {
   #
   # #----------- Word Clous
   # Make the wordcloud drawing predictable during a session
-  wordcloud_rep <- repeatable(wordcloud)
 
-  output$plot <- renderPlot({
-     v <- paste(tweet$text, collapse=",")
-     wordcloud_rep(v, scale=c(6,2),
-                   min.freq = input$freq, max.words=input$max,
-                   colors=brewer.pal(8, "Dark2"), lang = "english",
-                   removeWords = c("the",
-                                    "got",
-                                    "can",
-                                    "you",
-                                    "and",
-                                    "we",
-                                    "I'm",
-                                    "they",
-                                    "she",
-                                    "he"))
-   })
 
   output$mytable = DT::renderDataTable({
     tweet
+  })
+
+  observe({
+            d <- d[(d$value >= input$freq),]
+  output$plot <- renderWordcloud("test", data = d,
+                  grid_size = 10, sizeRange = c(20, 60))
   })
 
 }
