@@ -24,7 +24,8 @@ library(Rcpp)
 library(tm)
 library(shinydashboard)
 library(RJSONIO)
-library(ECharts2Shiny)
+library(devtools)
+library(githubinstall)
 
 trendingplaces <- as.list(read.csv("Data/Cities for trending topics.csv"))
 
@@ -204,23 +205,30 @@ server <- function(input, output) {
                                        "wyoming"), fill = TRUE, plot = FALSE)
 
   # avg_happiness <- TwitterMoodUSA::average_state_score(tweet)
-  avg_happiness <- read.csv("Data/avgnewtweetsdownload.csv")
+
+  avg_happiness <- read.csv("Data/Average_tweets_practice2.csv")
+  states <- geojsonio::geojson_read("Data/gz_2010_us_040_00_5m.json", what = "sp")
+  states <- states[-52, ]
+  states <- states[-12, ]
+  states <- states[-9, ]
+  states$happiness <- avg_happiness$V2
 
   labels <- sprintf(
     "<strong>%s</strong><br/>Happiness: %g",
-    avg_happiness[, 1], avg_happiness[, 2]
+    avg_happiness[, 1], states$happiness
   ) %>% lapply(htmltools::HTML)
 
   observe({
     pal <- colorQuantile(
       palette = input$color,
-      domain = avg_happiness[, 2],
+      domain = states$happiness,
       n = 6)
 
   output$mymap <- renderLeaflet({
-    leaflet(data = mapStates)%>% #data = mapStates) %>%
+
+    leaflet(data = states) %>%
     addTiles()%>%
-    addPolygons(fillColor = ~pal(avg_happiness[, 2]),
+    addPolygons(fillColor = ~pal(states$happiness),
                 weight = 2,
                 opacity = 1,
                 color = "white",
