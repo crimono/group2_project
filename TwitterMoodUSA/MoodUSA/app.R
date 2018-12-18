@@ -23,6 +23,7 @@ library(dplyr)
 library(tm)
 library(shinydashboard)
 library(geojsonio)
+library(DT)
 
 
 
@@ -120,9 +121,9 @@ ui <- fluidPage(
 
              tabPanel("Data explorer",
                       fluidRow(
-                        column(3,
-                               selectInput("states", "States", c("All states"="", structure(state.abb, names=state.name), "Washington, DC"="DC"), multiple=TRUE)
-                        )
+                        h2("Explore the tweets in a dataframe"),
+                        DT::dataTableOutput("mytable")
+
                       ),
                       conditionalPanel("false", icon("crosshair"))
              )
@@ -241,6 +242,9 @@ server <- function(input, output) {
                                     "he"))
    })
 
+  output$mytable = DT::renderDataTable({
+    tweet
+  })
 
 }
 
