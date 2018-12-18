@@ -213,33 +213,33 @@ server <- function(input, output) {
               panel.background = element_rect(fill = "transparent",colour = NA))
     },bg="transparent")
 
-    # v <- paste(tweet$text, collapse=",")
-    # v <- Corpus(VectorSource(v))
-    # v <- tm_map(v, content_transformer(tolower))
-    # v <- tm_map(v, removeNumbers)
-    # v <- tm_map(v, removeWords, stopwords("english"))
-    # v <- tm_map(v, removeWords, c("blabla1", "blabla2"))
-    # v <- tm_map(v, removePunctuation)
-    # v <- tm_map(v, stripWhitespace)
-    # dtm <- TermDocumentMatrix(v)
-    # m <- as.matrix(dtm)
-    # v2 <- sort(rowSums(m),decreasing=TRUE)
-    # d <- data.frame(name = names(v2), value=v2)
-    #
-    # observe({
-    #   d <- d[(d$value >= input$freq),]
-    #   output$plot <- renderWordcloud("test", data = d,
-    #                                  grid_size = 10, sizeRange = c(20, 60))
-    # })
+    v <- paste(tweet$text, collapse=",")
+    v <- Corpus(VectorSource(v))
+    v <- tm_map(v, content_transformer(tolower))
+    v <- tm_map(v, removeNumbers)
+    v <- tm_map(v, removeWords, stopwords("english"))
+    v <- tm_map(v, removeWords, c("blabla1", "blabla2"))
+    v <- tm_map(v, removePunctuation)
+    v <- tm_map(v, stripWhitespace)
+    dtm <- TermDocumentMatrix(v)
+    m <- as.matrix(dtm)
+    v2 <- sort(rowSums(m),decreasing=TRUE)
+    d <- data.frame(name = names(v2), value=v2)
+
+    observe({
+      d <- d[(d$value >= input$freq),]
+      output$plot <- renderWordcloud("test", data = d,
+                                     grid_size = 10, sizeRange = c(20, 60))
+    })
   })
   #
   observeEvent(input$action2, {
     # tweet <- TwitterMoodUSA::tweets_analysis(input$trendingtopics)
     tweet <- read_csv("Data/tweets5.csv")
 
-    avg_happiness <- TwitterMoodUSA::average_state_score(tweet)
+    #avg_happiness <- TwitterMoodUSA::average_state_score(tweet)
 
-    # avg_happiness <- read.csv("Data/avgnewtweetsdownload.csv")
+    avg_happiness <- read.csv("Data/avgnewtweetsdownload.csv")
     states <- geojsonio::geojson_read("Data/gz_2010_us_040_00_5m.json", what = "sp")
     states <- states[-52, ]
     states <- states[-12, ]
@@ -296,24 +296,24 @@ server <- function(input, output) {
               panel.background = element_rect(fill = "transparent",colour = NA))
     },bg="transparent")
 
-    # v <- paste(tweet$text, collapse=",")
-    # v <- Corpus(VectorSource(v))
-    # v <- tm_map(v, content_transformer(tolower))
-    # v <- tm_map(v, removeNumbers)
-    # v <- tm_map(v, removeWords, stopwords("english"))
-    # v <- tm_map(v, removeWords, c("blabla1", "blabla2"))
-    # v <- tm_map(v, removePunctuation)
-    # v <- tm_map(v, stripWhitespace)
-    # dtm <- TermDocumentMatrix(v)
-    # m <- as.matrix(dtm)
-    # v2 <- sort(rowSums(m),decreasing=TRUE)
-    # d <- data.frame(name = names(v2), value=v2)
-    #
-    # observe({
-    #   d <- d[(d$value >= input$freq),]
-    #   output$plot <- renderWordcloud("test", data = d,
-    #                                  grid_size = 10, sizeRange = c(20, 60))
-    # })
+    v <- paste(tweet$text, collapse=",")
+    v <- Corpus(VectorSource(v))
+    v <- tm_map(v, content_transformer(tolower))
+    v <- tm_map(v, removeNumbers)
+    v <- tm_map(v, removeWords, stopwords("english"))
+    v <- tm_map(v, removeWords, c("blabla1", "blabla2"))
+    v <- tm_map(v, removePunctuation)
+    v <- tm_map(v, stripWhitespace)
+    dtm <- TermDocumentMatrix(v)
+    m <- as.matrix(dtm)
+    v2 <- sort(rowSums(m),decreasing=TRUE)
+    d <- data.frame(name = names(v2), value=v2)
+
+    observe({
+      d <- d[(d$value >= input$freq),]
+      output$plot <- renderWordcloud("test", data = d,
+                                     grid_size = 10, sizeRange = c(20, 60))
+    })
   })
   #
   observeEvent(input$action3, {
@@ -379,24 +379,24 @@ server <- function(input, output) {
               panel.background = element_rect(fill = "transparent",colour = NA))
     },bg="transparent")
 
-    # v <- paste(tweet$text, collapse=",")
-    # v <- Corpus(VectorSource(v))
-    # v <- tm_map(v, content_transformer(tolower))
-    # v <- tm_map(v, removeNumbers)
-    # v <- tm_map(v, removeWords, stopwords("english"))
-    # v <- tm_map(v, removeWords, c("blabla1", "blabla2"))
-    # v <- tm_map(v, removePunctuation)
-    # v <- tm_map(v, stripWhitespace)
-    # dtm <- TermDocumentMatrix(v)
-    # m <- as.matrix(dtm)
-    # v2 <- sort(rowSums(m),decreasing=TRUE)
-    # d <- data.frame(name = names(v2), value=v2)
-    #
-    # observe({
-    #   d <- d[(d$value >= input$freq),]
-    #   output$plot <- renderWordcloud("test", data = d,
-    #                                  grid_size = 10, sizeRange = c(20, 60))
-    # })
+    v <- paste(tweet$text, collapse=",")
+    v <- Corpus(VectorSource(v))
+    v <- tm_map(v, content_transformer(tolower))
+    v <- tm_map(v, removeNumbers)
+    v <- tm_map(v, removeWords, stopwords("english"))
+    v <- tm_map(v, removeWords, c("blabla1", "blabla2"))
+    v <- tm_map(v, removePunctuation)
+    v <- tm_map(v, stripWhitespace)
+    dtm <- TermDocumentMatrix(v)
+    m <- as.matrix(dtm)
+    v2 <- sort(rowSums(m),decreasing=TRUE)
+    d <- data.frame(name = names(v2), value=v2)
+
+    observe({
+      d <- d[(d$value >= input$freq),]
+      output$plot <- renderWordcloud("test", data = d,
+                                     grid_size = 10, sizeRange = c(20, 60))
+    })
   })
 
   v <- paste(tweet$text, collapse=",")
