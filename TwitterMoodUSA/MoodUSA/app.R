@@ -22,12 +22,15 @@ library(plyr)
 library(dplyr)
 library(tm)
 library(shinydashboard)
+library(RJSONIO)
+library(devtools)
+library(githubinstall)
+library(ECharts2Shiny)
 library(geojsonio)
 
 
-
-
 trendingplaces <- as.list(read.csv("Data/Cities for trending topics.csv"))
+
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -109,12 +112,14 @@ ui <- fluidPage(
                       sliderInput("freq",
                                   "Minimum Frequency:",
                                   min = 1,  max = 50, value = 15),
-                      sliderInput("max",
-                                  "Maximum Number of Words:",
-                                  min = 1, max = 50, value = 30),
+                      #sliderInput("max",
+                      #            "Maximum Number of Words:",
+                      #            min = 1, max = 50, value = 30),
                       # Show Word Cloud
                       mainPanel(
-                        plotOutput("plot")
+                        loadEChartsLibrary(),
+                        tags$div(id="test", style="width:100%;height:500px;"),
+                        deliverChart(div_id = "test")
                       )
              ),
 
@@ -159,6 +164,7 @@ server <- function(input, output) {
   #   # TwitterMoodUSA::tweets_analysis(input$text)
   #   read_csv("Data/tweets2.csv")
   # })
+
 
   observeEvent(input$action1, {
     tweet <- tweet_overall
@@ -420,6 +426,19 @@ server <- function(input, output) {
     })
   })
 
+  v <- paste(tweet$text, collapse=",")
+  v <- Corpus(VectorSource(v))
+  v <- tm_map(v, content_transformer(tolower))
+  v <- tm_map(v, removeNumbers)
+  v <- tm_map(v, removeWords, stopwords("english"))
+  v <- tm_map(v, removeWords, c("blabla1", "blabla2"))
+  v <- tm_map(v, removePunctuation)
+  v <- tm_map(v, stripWhitespace)
+  dtm <- TermDocumentMatrix(v)
+  m <- as.matrix(dtm)
+  v2 <- sort(rowSums(m),decreasing=TRUE)
+  d <- data.frame(name = names(v2), value=v2)
+
   avg_happiness <- TwitterMoodUSA::average_state_score(tweet)
 
   # avg_happiness <- read.csv("Data/avgnewtweetsdownload.csv")
@@ -483,25 +502,12 @@ server <- function(input, output) {
   #
   # #----------- Word Clous
   # Make the wordcloud drawing predictable during a session
-  wordcloud_rep <- repeatable(wordcloud)
 
-  output$plot <- renderPlot({
-     v <- paste(tweet$text, collapse=",")
-     wordcloud_rep(v, scale=c(6,2),
-                   min.freq = input$freq, max.words=input$max,
-                   colors=brewer.pal(8, "Dark2"), lang = "english",
-                   removeWords = c("the",
-                                    "got",
-                                    "can",
-                                    "you",
-                                    "and",
-                                    "we",
-                                    "I'm",
-                                    "they",
-                                    "she",
-                                    "he"))
-   })
-
+  observe({
+            d <- d[(d$value >= input$freq),]
+  output$plot <- renderWordcloud("test", data = d,
+                  grid_size = 10, sizeRange = c(20, 60))
+  })
 
 }
 
