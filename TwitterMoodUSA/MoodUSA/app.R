@@ -9,7 +9,6 @@
 
 library(shiny)
 library(leaflet)
-library(dplyr)
 library(ggplot2)
 library(ggforce)
 library(maps)
@@ -20,14 +19,14 @@ library(TwitterMoodUSA)
 library(rtweet)
 library(sentimentr)
 library(plyr)
-library(Rcpp)
+library(dplyr)
 library(tm)
 library(shinydashboard)
 library(RJSONIO)
 library(devtools)
 library(githubinstall)
 library(ECharts2Shiny)
-
+library(geojsonio)
 
 
 trendingplaces <- as.list(read.csv("Data/Cities for trending topics.csv"))
@@ -57,7 +56,7 @@ ui <- fluidPage(
   navbarPage("Mood in the US", id="nav",
 
              tabPanel("Interactive map",
-                      leafletOutput("mymap", width="100%", height="700px"),
+                      leafletOutput("mymap", width="100%", height="670px"),
                       absolutePanel(fixed = TRUE,
                                     draggable = TRUE, top = 200, right = "auto",
                                     left = 40, bottom = "auto",
@@ -87,8 +86,6 @@ ui <- fluidPage(
                                         textInput("text", "How is the US feeling about...", value = "Write your topic or hashtag here"),
                                         actionButton("action3", label = "Launch New Search")
                                       )
-
-                                       ### We need the right hashtags
                                     )
 
                       ),
@@ -103,7 +100,7 @@ ui <- fluidPage(
                                            "Green" = "Greens"))
                       ),
                       absolutePanel(fixed = TRUE,
-                                    draggable = TRUE, top = 400, left = "auto",
+                                    draggable = TRUE, top = 395, left = "auto",
                                     right = 40, bottom = "auto",
                                     width = 330, height = "auto",
                         plotOutput("hist", height = 200)
@@ -147,16 +144,24 @@ server <- function(input, output) {
     selectInput("trendingnow", "Trending Topics", choices = (topics = topics))
   })
 
+  tweet <- read.csv("Data/tweets2.csv")
+
+  # tweet <- TwitterMoodUSA::tweets_analysis()
+  # tweet <- as.data.frame(tweet)
+
+  # tweet_overall <- tweet
+  #
   # tweet <- eventReactive(input$action1, {
-  #   # TwitterMoodUSA::tweets_analysis(),
+  #   tweet_overall
   # })
   #
   # tweet <- eventReactive(input$action2, {
-  #   # TwitterMoodUSA::tweets_analysis(input$trendingtopics),
+  #   TwitterMoodUSA::tweets_analysis(input$trendingtopics)
+  #
   # })
   #
   # tweet <- eventReactive(input$action3, {
-  #   # TwitterMoodUSA::tweets_analysis(input$text),
+  #   TwitterMoodUSA::tweets_analysis(input$text)
   # })
 
   tweet <- read.csv("Data/Tweets_practice2.csv")
@@ -173,14 +178,15 @@ server <- function(input, output) {
   v2 <- sort(rowSums(m),decreasing=TRUE)
   d <- data.frame(name = names(v2), value=v2)
 
-  # avg_happiness <- TwitterMoodUSA::average_state_score(tweet)
-  avg_happiness <- read.csv("Data/Average_tweets_practice2.csv")
+  avg_happiness <- TwitterMoodUSA::average_state_score(tweet)
+
+  # avg_happiness <- read.csv("Data/avgnewtweetsdownload.csv")
   states <- geojsonio::geojson_read("Data/gz_2010_us_040_00_5m.json", what = "sp")
   states <- states[-52, ]
   states <- states[-12, ]
   states <- states[-9, ]
   states$happiness <- avg_happiness$V2
-  
+
   labels <- sprintf(
     "<strong>%s</strong><br/>Happiness: %g",
     avg_happiness[, 1], states$happiness
@@ -193,6 +199,7 @@ server <- function(input, output) {
       n = 6)
 
   output$mymap <- renderLeaflet({
+
     leaflet(data = states) %>%
     addTiles()%>%
     addPolygons(fillColor = ~pal(states$happiness),
@@ -234,11 +241,13 @@ server <- function(input, output) {
   #
   # #----------- Word Clous
   # Make the wordcloud drawing predictable during a session
+
   observe({
             d <- d[(d$value >= input$freq),]
   output$plot <- renderWordcloud("test", data = d,
                   grid_size = 10, sizeRange = c(20, 60))
   })
+d)
 
 }
 
