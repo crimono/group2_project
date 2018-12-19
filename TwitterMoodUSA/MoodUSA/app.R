@@ -146,9 +146,9 @@ server <- function(input, output) {
   })
 
   tweet <- read.csv("Data/tweets4.csv")
-
-  # tweet <- TwitterMoodUSA::tweets_analysis()
-  # tweet <- as.data.frame(tweet)
+  # 
+  # # tweet <- TwitterMoodUSA::tweets_analysis()
+  # # tweet <- as.data.frame(tweet)
 
   tweet_overall <- tweet
 
@@ -157,7 +157,6 @@ server <- function(input, output) {
 
     avg_happiness <- TwitterMoodUSA::average_state_score(tweet)
 
-    # avg_happiness <- read.csv("Data/avgnewtweetsdownload.csv")
     states <- geojsonio::geojson_read("Data/gz_2010_us_040_00_5m.json", what = "sp")
     states <- states[-52, ]
     states <- states[-12, ]
@@ -235,7 +234,7 @@ server <- function(input, output) {
   })
   #
   observeEvent(input$action2, {
-    # tweet <- TwitterMoodUSA::tweets_analysis(input$trendingtopics)
+    # # tweet <- TwitterMoodUSA::tweets_analysis(input$trendingtopics)
     tweet <- read.csv("Data/tweets5.csv")
 
     avg_happiness <- TwitterMoodUSA::average_state_score(tweet)
@@ -315,9 +314,9 @@ server <- function(input, output) {
                                      grid_size = 10, sizeRange = c(20, 60))
     })
   })
-  #
+
   observeEvent(input$action3, {
-    # TwitterMoodUSA::tweets_analysis(input$text)
+    #TwitterMoodUSA::tweets_analysis(input$text)
     tweet <- read.csv("Data/tweets2.csv")
 
     avg_happiness <- TwitterMoodUSA::average_state_score(tweet)
